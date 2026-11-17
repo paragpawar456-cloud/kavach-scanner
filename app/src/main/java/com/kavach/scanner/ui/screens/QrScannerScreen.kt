@@ -21,6 +21,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FlashlightOff
 import androidx.compose.material.icons.filled.FlashlightOn
 import androidx.compose.material.icons.filled.Image
@@ -71,7 +72,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.kavach.scanner.scan.ImageScanner
-import com.kavach.scanner.ui.theme.KColors
+import com.kavach.scanner.ui.theme.K
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.Executors
@@ -99,7 +100,7 @@ fun QrScannerScreen(onResult: (String) -> Unit, onBack: () -> Unit) {
         }
     }
 
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().background(if (granted) Color.Black else K.bg)) {
         if (granted) {
             CameraPreview(onResult)
             ScanOverlay()
@@ -108,29 +109,29 @@ fun QrScannerScreen(onResult: (String) -> Unit, onBack: () -> Unit) {
                 Modifier.fillMaxSize().padding(32.dp), verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Camera access is needed to scan QR codes.", textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
+                Text("Camera access is needed to scan QR codes.", textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium, color = K.text)
                 Text(
                     "The camera is used only on this screen and no image is saved or uploaded.",
-                    textAlign = TextAlign.Center, color = KColors.TextDim, modifier = Modifier.padding(top = 8.dp),
+                    textAlign = TextAlign.Center, color = K.textDim, modifier = Modifier.padding(top = 8.dp),
                 )
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = { permission.launch(Manifest.permission.CAMERA) }, colors = ButtonDefaults.buttonColors(containerColor = KColors.Cyan)) {
-                    Text("Allow camera", color = Color(0xFF001A20))
+                Button(onClick = { permission.launch(Manifest.permission.CAMERA) }, colors = ButtonDefaults.buttonColors(containerColor = K.orange)) {
+                    Text("Allow camera", color = Color.White)
                 }
             }
         }
         Row(Modifier.fillMaxWidth().statusBarsPadding().padding(8.dp)) {
-            IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, "Back", tint = Color.White) }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = if (granted) Color.White else K.text) }
         }
         Column(
             Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(message ?: "Point at a QR code. It will be checked, NOT opened.", color = Color.White, textAlign = TextAlign.Center)
+            Text(message ?: "Point at a QR code. It will be checked, NOT opened.", color = if (granted) Color.White else K.text, textAlign = TextAlign.Center)
             Spacer(Modifier.height(12.dp))
             OutlinedButton(onClick = { pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
-                Icon(Icons.Filled.Image, null, tint = KColors.Cyan)
-                Text("  Pick QR from gallery", color = KColors.Cyan)
+                Icon(Icons.Filled.Image, null, tint = K.orange)
+                Text("  Pick QR from gallery", color = K.orange)
             }
         }
     }
@@ -204,14 +205,15 @@ private fun CameraPreview(onResult: (String) -> Unit) {
 private fun ScanOverlay() {
     val t = rememberInfiniteTransition(label = "laser")
     val pos by t.animateFloat(0f, 1f, infiniteRepeatable(tween(1600, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "pos")
+    val frame = K.orange
     Canvas(Modifier.fillMaxSize().graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }) {
         val side = size.minDimension * 0.68f
         val left = (size.width - side) / 2
         val top = (size.height - side) / 2.4f
         drawRect(Color.Black.copy(alpha = 0.6f))
         drawRoundRect(Color.Transparent, Offset(left, top), Size(side, side), CornerRadius(36f), blendMode = BlendMode.Clear)
-        drawRoundRect(KColors.Cyan, Offset(left, top), Size(side, side), CornerRadius(36f), style = Stroke(5f))
+        drawRoundRect(frame, Offset(left, top), Size(side, side), CornerRadius(36f), style = Stroke(6f))
         val y = top + side * pos
-        drawLine(KColors.Green, Offset(left + 20, y), Offset(left + side - 20, y), 4f)
+        drawLine(frame, Offset(left + 20, y), Offset(left + side - 20, y), 5f)
     }
 }

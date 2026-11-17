@@ -44,6 +44,19 @@ class SettingsStore(context: Context) {
         get() = prefs.getString(K_UH, "").orEmpty()
         set(v) = prefs.edit().putString(K_UH, v.trim()).apply()
 
+    /** "LIGHT", "DARK" or "SYSTEM". */
+    var theme: String
+        get() = prefs.getString(K_THEME, "LIGHT") ?: "LIGHT"
+        set(v) = prefs.edit().putString(K_THEME, v).apply()
+    var saveHistory: Boolean
+        get() = prefs.getBoolean(K_HISTORY, true)
+        set(v) = prefs.edit().putBoolean(K_HISTORY, v).apply()
+
+    /** Encrypted on-device scan history (JSON). Never synced or uploaded. */
+    var historyJson: String
+        get() = prefs.getString(K_HISTORY_DATA, "[]") ?: "[]"
+        set(v) = prefs.edit().putString(K_HISTORY_DATA, v).apply()
+
     fun toOptions() = ScanOptions(
         onlineChecks = onlineChecks,
         followRedirects = followRedirects,
@@ -60,5 +73,8 @@ class SettingsStore(context: Context) {
         const val K_GSB = "key_safe_browsing"
         const val K_VT = "key_virustotal"
         const val K_UH = "key_urlhaus"
+        const val K_THEME = "theme"
+        const val K_HISTORY = "save_history"
+        const val K_HISTORY_DATA = "history_data"
     }
 }

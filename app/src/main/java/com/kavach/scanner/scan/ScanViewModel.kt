@@ -8,7 +8,13 @@ import com.kavach.core.ScanEngine
 import com.kavach.core.model.InputType
 import com.kavach.core.model.ScanReport
 import com.kavach.core.model.Verdict
+import com.kavach.core.PasswordChecker
+import com.kavach.scanner.data.HistoryItem
+import com.kavach.scanner.data.HistoryStore
 import com.kavach.scanner.data.SettingsStore
+import com.kavach.scanner.ui.theme.ThemeMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -28,7 +34,47 @@ sealed interface ScanUiState {
 class ScanViewModel(app: Application) : AndroidViewModel(app) {
 
     val settings = SettingsStore(app)
+    val history = HistoryStore(settings)
     private val engine = ScanEngine()
+
+    private val _theme = MutableStateFlow(runCatching { ThemeMode.valueOf(settings.theme) }.getOrDefault(ThemeMode.LIGHT))
+    val theme: StateFlow<ThemeMode> = _theme
+    fun setTheme(m: ThemeMode) { settings.theme = m.name; _theme.value = m }
+
+    private val _history = MutableStateFlow(history.all())
+    val historyItems: StateFlow<List<HistoryItem>> = _history
+    fun clearHistory() { history.clear(); _history.value = emptyList() }
+
+    private val _device = MutableStateFlow<DeviceReport?>(null)
+    val device: StateFlow<DeviceReport?> = _device
+    private val _deviceRunning = MutableStateFlow(false)
+    val deviceRunning: StateFlow<Boolean> = _deviceRunning
+    fun runDeviceCheck() {
+        if (_deviceRunning.value) return
+        _deviceRunning.value = true
+        viewModelScope.launch {
+            val started = System.currentTimeMillis()
+            val r = withContext(Dispatchers.Default) { runCatching { DeviceChecker.run(getApplication()) }.getOrNull() }
+            kotlinx.coroutines.delay((1500 - (System.currentTimeMillis() - started)).coerceAtLeast(0)) // let the scan animation play
+            _device.value = r
+            _deviceRunning.value = false
+        }
+    }
+
+    /** Breach check result: null = not run, -1 = error, else count. */
+    private val _breach = MutableStateFlow<Int?>(null)
+    val breach: StateFlow<Int?> = _breach
+    private val _breachRunning = MutableStateFlow(false)
+    val breachRunning: StateFlow<Boolean> = _breachRunning
+    fun checkBreach(pw: String) {
+        if (pw.isEmpty()) return
+        _breachRunning.value = true
+        viewModelScope.launch {
+            _breach.value = withContext(Dispatchers.IO) { runCatching { PasswordChecker.breachCount(pw) }.getOrDefault(-1) }
+            _breachRunning.value = false
+        }
+    }
+    fun resetBreach() { _breach.value = null }
 
     private val _state = MutableStateFlow<ScanUiState>(ScanUiState.Idle)
     val state: StateFlow<ScanUiState> = _state
@@ -74,7 +120,12 @@ class ScanViewModel(app: Application) : AndroidViewModel(app) {
         _openResult.tryEmit(Unit)
         job = viewModelScope.launch {
             _state.value = try {
-                block()
+                block().also { st ->
+                    if (st is ScanUiState.Done) {
+                        history.add(st.report)
+                        _history.value = history.all()
+                    }
+                }
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
