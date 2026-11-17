@@ -101,11 +101,13 @@ private val standards = listOf(
 )
 
 @Composable
-fun GuideScreen(onBack: (() -> Unit)?) {
+fun GuideScreen(onBack: (() -> Unit)?, onAttacks: () -> Unit = {}) {
     val context = LocalContext.current
     Column(Modifier.fillMaxSize().background(K.bg)) {
         KTopBar("Learn & stay safe", onBack)
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
+            Spacer(Modifier.height(8.dp))
+            ShineButton("OPEN ATTACK LIBRARY (20 HACKS)", Icons.Filled.Policy, Modifier.fillMaxWidth(), color = K.navy) { onAttacks() }
             SectionTitle("Quick quiz: scam or genuine?")
             QuizCard()
 

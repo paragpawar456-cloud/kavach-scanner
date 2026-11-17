@@ -57,6 +57,17 @@ class SettingsStore(context: Context) {
         get() = prefs.getString(K_HISTORY_DATA, "[]") ?: "[]"
         set(v) = prefs.edit().putString(K_HISTORY_DATA, v).apply()
 
+    var messageShield: Boolean
+        get() = prefs.getBoolean(K_SHIELD, true)
+        set(v) = prefs.edit().putBoolean(K_SHIELD, v).apply()
+    var shieldBlocked: Int
+        get() = prefs.getInt(K_SHIELD_COUNT, 0)
+        set(v) = prefs.edit().putInt(K_SHIELD_COUNT, v).apply()
+    /** Ids of completed items in the "Secure my accounts" checklist. */
+    var accountChecklist: Set<String>
+        get() = prefs.getStringSet(K_CHECKLIST, emptySet()) ?: emptySet()
+        set(v) = prefs.edit().putStringSet(K_CHECKLIST, v).apply()
+
     fun toOptions() = ScanOptions(
         onlineChecks = onlineChecks,
         followRedirects = followRedirects,
@@ -74,6 +85,9 @@ class SettingsStore(context: Context) {
         const val K_VT = "key_virustotal"
         const val K_UH = "key_urlhaus"
         const val K_THEME = "theme"
+        const val K_SHIELD = "message_shield"
+        const val K_SHIELD_COUNT = "shield_count"
+        const val K_CHECKLIST = "account_checklist"
         const val K_HISTORY = "save_history"
         const val K_HISTORY_DATA = "history_data"
     }

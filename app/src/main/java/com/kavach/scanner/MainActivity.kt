@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -44,7 +45,10 @@ import androidx.navigation.compose.rememberNavController
 import com.kavach.core.model.InputType
 import com.kavach.scanner.scan.ScanUiState
 import com.kavach.scanner.scan.ScanViewModel
+import com.kavach.scanner.ui.screens.AccountsScreen
+import com.kavach.scanner.ui.screens.AttacksScreen
 import com.kavach.scanner.ui.screens.DeviceScreen
+import com.kavach.scanner.ui.screens.ShieldScreen
 import com.kavach.scanner.ui.screens.GuideScreen
 import com.kavach.scanner.ui.screens.HistoryScreen
 import com.kavach.scanner.ui.screens.HomeStats
@@ -170,6 +174,11 @@ fun KavachApp(vm: ScanViewModel) {
                 popExitTransition = { fadeOut(tween(180)) + slideOutHorizontally(tween(260)) { it / 8 } },
             ) {
                 composable("home") {
+                    val ctx = androidx.compose.ui.platform.LocalContext.current
+                    var shieldOn by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                        shieldOn = vm.settings.messageShield && com.kavach.scanner.shield.MessageShieldService.hasAccess(ctx)
+                    }
                     val st = remember(history) { history.size to history }
                     HomeScreen(
                         stats = HomeStats(
@@ -177,6 +186,7 @@ fun KavachApp(vm: ScanViewModel) {
                             history.count { it.verdict == com.kavach.core.model.Verdict.DANGEROUS },
                             history.count { it.verdict == com.kavach.core.model.Verdict.SUSPICIOUS },
                             device?.score,
+                            shieldOn,
                         ),
                         isDark = dark,
                         onToggleTheme = { vm.setTheme(if (dark) ThemeMode.LIGHT else ThemeMode.DARK) },
@@ -188,6 +198,9 @@ fun KavachApp(vm: ScanViewModel) {
                         onReport = { nav.navigate("report") },
                         onGuide = { nav.navigate("guide") { launchSingleTop = true } },
                         onHistory = { nav.navigate("history") { launchSingleTop = true } },
+                        onShield = { nav.navigate("shield") },
+                        onAccounts = { nav.navigate("accounts") },
+                        onAttacks = { nav.navigate("attacks") },
                     )
                 }
                 composable("qr") {
@@ -211,7 +224,10 @@ fun KavachApp(vm: ScanViewModel) {
                 composable("history") {
                     HistoryScreen(history, vm.settings.saveHistory, onRescan = { vm.scan(it.input, if (it.type == InputType.QR) InputType.QR else InputType.URL) }, onClear = { vm.clearHistory() })
                 }
-                composable("guide") { GuideScreen(onBack = null) }
+                composable("guide") { GuideScreen(onBack = null, onAttacks = { nav.navigate("attacks") }) }
+                composable("shield") { ShieldScreen(vm.settings, onBack = { nav.popBackStack() }) }
+                composable("accounts") { AccountsScreen(vm.settings, onPassword = { nav.navigate("password") }, onBack = { nav.popBackStack() }) }
+                composable("attacks") { AttacksScreen(onBack = { nav.popBackStack() }) }
                 composable("settings") { SettingsScreen(vm.settings, theme, onTheme = { vm.setTheme(it) }, onClearHistory = { vm.clearHistory() }) }
             }
         }

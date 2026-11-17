@@ -104,7 +104,7 @@ fun SettingsScreen(settings: SettingsStore, theme: ThemeMode, onTheme: (ThemeMod
                     "Built around India's DPDP Act 2023: purpose limitation, data minimisation and consent.",
                 ).forEach { Text("• $it", color = K.text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 3.dp)) }
             }
-            Text("Kavach v2.0", color = K.textDim, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(vertical = 20.dp))
+            Text("Kavach v3.0", color = K.textDim, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(vertical = 20.dp))
         }
     }
 }

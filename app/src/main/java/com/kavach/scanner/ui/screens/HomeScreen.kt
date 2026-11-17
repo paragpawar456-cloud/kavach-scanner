@@ -30,7 +30,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ManageAccounts
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.GppGood
@@ -78,7 +81,7 @@ import com.kavach.scanner.ui.components.enter
 import com.kavach.scanner.ui.components.pressable
 import com.kavach.scanner.ui.theme.K
 
-data class HomeStats(val scans: Int, val dangerous: Int, val suspicious: Int, val deviceScore: Int?)
+data class HomeStats(val scans: Int, val dangerous: Int, val suspicious: Int, val deviceScore: Int?, val shieldOn: Boolean = false)
 
 @Composable
 fun HomeScreen(
@@ -93,6 +96,9 @@ fun HomeScreen(
     onReport: () -> Unit,
     onGuide: () -> Unit,
     onHistory: () -> Unit,
+    onShield: () -> Unit,
+    onAccounts: () -> Unit,
+    onAttacks: () -> Unit,
 ) {
     val context = LocalContext.current
     var input by rememberSaveable { mutableStateOf("") }
@@ -122,7 +128,7 @@ fun HomeScreen(
                 Text("Scan before you click", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Spacer(Modifier.height(10.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    HeroChip(Icons.Filled.GppGood, "Protection on")
+                    HeroChip(Icons.Filled.GppGood, if (stats.shieldOn) "Shield ON" else "Turn on Shield", onShield)
                     HeroChip(Icons.Filled.PhonelinkLock, stats.deviceScore?.let { "Phone score $it" } ?: "Check phone", onDevice)
                 }
             }
@@ -162,10 +168,12 @@ fun HomeScreen(
             val tools = listOf(
                 Tool(Icons.Filled.QrCodeScanner, "Scan QR", "Camera or gallery", K.green, onQr),
                 Tool(Icons.Filled.Screenshot, "Screenshot", "SMS & WhatsApp", K.purple, onScreenshot),
-                Tool(Icons.Filled.PhonelinkLock, "Phone check", "Find risky apps", K.blue, onDevice),
+                Tool(Icons.Filled.NotificationsActive, "Message Shield", if (stats.shieldOn) "Real-time: ON" else "Real-time alerts", K.orange, onShield),
+                Tool(Icons.Filled.PhonelinkLock, "Phone check", "Spyware & Wi-Fi", K.blue, onDevice),
                 Tool(Icons.Filled.Key, "Password", "Strength & leaks", K.amber, onPassword),
+                Tool(Icons.Filled.ManageAccounts, "Secure accounts", "14-step checklist", K.green, onAccounts),
+                Tool(Icons.Filled.BugReport, "Attack library", "20 hacks explained", K.purple, onAttacks),
                 Tool(Icons.Filled.ReportProblem, "Report fraud", "1930 & cybercrime", K.red, onReport),
-                Tool(Icons.AutoMirrored.Filled.MenuBook, "Learn", "Scams in India", K.orange, onGuide),
             )
             tools.chunked(2).forEachIndexed { row, pair ->
                 Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -175,7 +183,7 @@ fun HomeScreen(
 
             // ---------- Stats ----------
             SectionTitle("Your activity", action = "History", onAction = onHistory)
-            KCard(Modifier.fillMaxWidth().enter(7)) {
+            KCard(Modifier.fillMaxWidth().enter(9)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     Stat("${stats.scans}", "Scans", K.orange)
                     Stat("${stats.dangerous}", "Threats blocked", K.red)
@@ -185,7 +193,7 @@ fun HomeScreen(
 
             // ---------- Tip ----------
             SectionTitle("Tip of the day")
-            KCard(Modifier.fillMaxWidth().enter(8), accent = K.amber) {
+            KCard(Modifier.fillMaxWidth().enter(10), accent = K.amber) {
                 Row(verticalAlignment = Alignment.Top) {
                     IconBadge(Icons.Filled.Lightbulb, K.amber, 40.dp)
                     Spacer(Modifier.width(12.dp))

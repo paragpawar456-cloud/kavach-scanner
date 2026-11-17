@@ -7,6 +7,9 @@
          No storage, contacts, SMS or location permission: screenshots come through the system photo picker. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Network check (Wi-Fi security, VPN) and scam-alert notifications. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- Phone Security Check: lists apps installed from outside app stores that can read SMS/OTP.
          The list is analysed on the phone and never leaves it. -->
@@ -60,6 +63,16 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <!-- Real-time Message Shield: only active after the user grants Notification access. -->
+        <service
+            android:name=".shield.MessageShieldService"
+            android:exported="true"
+            android:label="Kavach Message Shield"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
     <!-- Needed on Android 11+ to see which apps can open the reporting website and the dialer. -->
