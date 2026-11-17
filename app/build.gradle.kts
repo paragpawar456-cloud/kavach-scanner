@@ -18,8 +18,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Signed with the debug key so the APK installs directly. Use your own keystore before publishing on Play Store.
             signingConfig = signingConfigs.getByName("debug")

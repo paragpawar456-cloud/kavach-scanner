@@ -26,7 +26,12 @@ object ImageScanner {
         val hindi = TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
         val barcodes = BarcodeScanning.getClient(barcodeOptions)
         try {
-            val latinText = runCatching { latin.process(image).await().text }.getOrDefault("")
+            val latinText = try {
+                latin.process(image).await().text
+            } catch (e: Exception) {
+                // Models are delivered by Google Play services; on first use they may still be downloading.
+                throw IllegalStateException("The text reader is still being set up by Google Play services. Stay online and try again in a minute.", e)
+            }
             // The Devanagari model also reads Latin letters; use it when the screenshot contains Hindi/Marathi.
             val devText = runCatching { hindi.process(image).await().text }.getOrDefault("")
             val hasDevanagari = devText.any { Character.UnicodeScript.of(it.code) == Character.UnicodeScript.DEVANAGARI }

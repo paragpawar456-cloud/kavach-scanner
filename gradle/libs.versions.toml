@@ -10,8 +10,9 @@ activityCompose = "1.9.3"
 composeBom = "2024.12.01"
 navigation = "2.8.5"
 camerax = "1.4.1"
-mlkitBarcode = "17.3.0"
-mlkitText = "16.0.1"
+mlkitBarcode = "18.3.1"
+mlkitText = "19.0.1"
+mlkitTextDevanagari = "16.0.1"
 securityCrypto = "1.1.0-alpha06"
 junit = "4.13.2"
 
@@ -40,9 +41,9 @@ androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
-mlkit-barcode = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcode" }
-mlkit-text = { module = "com.google.mlkit:text-recognition", version.ref = "mlkitText" }
-mlkit-text-devanagari = { module = "com.google.mlkit:text-recognition-devanagari", version.ref = "mlkitText" }
+mlkit-barcode = { module = "com.google.android.gms:play-services-mlkit-barcode-scanning", version.ref = "mlkitBarcode" }
+mlkit-text = { module = "com.google.android.gms:play-services-mlkit-text-recognition", version.ref = "mlkitText" }
+mlkit-text-devanagari = { module = "com.google.android.gms:play-services-mlkit-text-recognition-devanagari", version.ref = "mlkitTextDevanagari" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 
 [plugins]
