@@ -210,7 +210,7 @@ private data class Tool(val icon: ImageVector, val title: String, val sub: Strin
 
 @Composable
 private fun ToolTile(t: Tool, modifier: Modifier) {
-    KCard(modifier.clip(RoundedCornerShape(20.dp)).pressable(t.onClick), padding = 14.dp) {
+    KCard(modifier.clip(RoundedCornerShape(20.dp)).pressable(onClick = t.onClick), padding = 14.dp) {
         IconBadge(t.icon, t.color, 46.dp)
         Spacer(Modifier.height(12.dp))
         Text(t.title, fontWeight = FontWeight.Bold, color = K.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -222,7 +222,7 @@ private fun ToolTile(t: Tool, modifier: Modifier) {
 private fun HeroChip(icon: ImageVector, text: String, onClick: (() -> Unit)? = null) {
     Row(
         Modifier.clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.2f))
-            .then(if (onClick != null) Modifier.pressable(onClick) else Modifier)
+            .then(if (onClick != null) Modifier.pressable(onClick = onClick) else Modifier)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -247,7 +247,7 @@ fun EmergencyBanner(onCall: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
             .background(Brush.horizontalGradient(listOf(Color(0xFFDC2626), Color(0xFFB91C1C))))
-            .pressable(onCall).padding(16.dp),
+            .pressable(onClick = onCall).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.size(46.dp).scale(pulse).clip(CircleShape).background(Color.White.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {

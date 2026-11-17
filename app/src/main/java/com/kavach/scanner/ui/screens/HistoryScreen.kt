@@ -67,7 +67,7 @@ fun HistoryScreen(items: List<HistoryItem>, enabled: Boolean, onRescan: (History
         }
         LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
             itemsIndexed(items) { i, it ->
-                KCard(Modifier.fillMaxWidth().padding(vertical = 5.dp).enter(minOf(i, 8)).clip(RoundedCornerShape(20.dp)).pressable({ onRescan(it) })) {
+                KCard(Modifier.fillMaxWidth().padding(vertical = 5.dp).enter(minOf(i, 8)).clip(RoundedCornerShape(20.dp)).pressable { onRescan(it) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconBadge(
                             when (it.type) { InputType.QR -> Icons.Filled.QrCode2; InputType.SCREENSHOT -> Icons.Filled.Image; InputType.MESSAGE -> Icons.Filled.Message; InputType.URL -> Icons.Filled.Link },

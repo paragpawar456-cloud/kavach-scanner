@@ -64,7 +64,7 @@ import com.kavach.scanner.ui.theme.K
 
 /** Springy press feedback for any clickable element. */
 @Composable
-fun Modifier.pressable(onClick: () -> Unit, enabled: Boolean = true): Modifier {
+fun Modifier.pressable(enabled: Boolean = true, onClick: () -> Unit): Modifier {
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.95f else 1f, spring(dampingRatio = 0.5f, stiffness = 600f), label = "press")
@@ -103,7 +103,7 @@ fun ShineButton(text: String, icon: ImageVector?, modifier: Modifier = Modifier,
             .height(54.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(if (enabled) Brush.horizontalGradient(listOf(color, color.copy(red = (color.red * 0.9f)))) else Brush.horizontalGradient(listOf(K.outline, K.outline)))
-            .pressable(onClick, enabled),
+            .pressable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         if (enabled) {
