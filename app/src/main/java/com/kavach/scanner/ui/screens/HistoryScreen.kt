@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,7 +71,7 @@ fun HistoryScreen(items: List<HistoryItem>, enabled: Boolean, onRescan: (History
                 KCard(Modifier.fillMaxWidth().padding(vertical = 5.dp).enter(minOf(i, 8)).clip(RoundedCornerShape(20.dp)).pressable { onRescan(it) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconBadge(
-                            when (it.type) { InputType.QR -> Icons.Filled.QrCode2; InputType.SCREENSHOT -> Icons.Filled.Image; InputType.MESSAGE -> Icons.Filled.Message; InputType.URL -> Icons.Filled.Link },
+                            when (it.type) { InputType.QR -> Icons.Filled.QrCode2; InputType.SCREENSHOT -> Icons.Filled.Image; InputType.MESSAGE -> Icons.Filled.Message; InputType.URL -> Icons.Filled.Link; InputType.PHONE -> Icons.Filled.Phone },
                             K.verdict(it.verdict), 40.dp,
                         )
                         Spacer(Modifier.width(12.dp))
