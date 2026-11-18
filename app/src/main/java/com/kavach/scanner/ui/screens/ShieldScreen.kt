@@ -104,6 +104,7 @@ fun ShieldScreen(settings: SettingsStore, onBack: () -> Unit) {
             SectionTitle("Your privacy")
             KCard(Modifier.fillMaxWidth(), accent = K.green) {
                 listOf(
+                    "Also guards new installs: you get a warning if a newly installed app looks like a banking trojan, spyware or a remote-control app.",
                     "Only message apps are checked (SMS, WhatsApp, Telegram, Gmail, Truecaller…).",
                     "Checks run offline on your phone. Messages are never stored, uploaded or shared.",
                     "You can switch it off here or in Android settings at any time.",

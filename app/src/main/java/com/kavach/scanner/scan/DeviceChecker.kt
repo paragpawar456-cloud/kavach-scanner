@@ -40,7 +40,7 @@ data class DeviceReport(val score: Int, val checks: List<DeviceCheck>, val risky
  */
 object DeviceChecker {
 
-    private val trustedStores = setOf(
+    internal val trustedStores = setOf(
         "com.android.vending", "com.google.android.feedback", "com.sec.android.app.samsungapps", "com.huawei.appmarket",
         "com.xiaomi.market", "com.xiaomi.mipicks", "com.heytap.market", "com.oppo.market", "com.bbk.appstore", "com.vivo.appstore",
         "com.amazon.venezia", "com.oneplus.market", "com.realme.appstore", "com.miui.packageinstaller.market",

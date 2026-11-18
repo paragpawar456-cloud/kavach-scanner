@@ -101,7 +101,13 @@ class ScanViewModel(app: Application) : AndroidViewModel(app) {
 
     private var job: Job? = null
 
+    /** Link Guard: a link that the user tapped elsewhere and sent to Kavach; offered for opening after the check. */
+    private val _linkToOpen = MutableStateFlow<String?>(null)
+    val linkToOpen: StateFlow<String?> = _linkToOpen
+    fun scanLink(url: String) { scan(url, InputType.URL); _linkToOpen.value = url }
+
     fun scan(input: String, type: InputType) {
+        _linkToOpen.value = null
         if (input.isBlank()) return
         start(if (type == InputType.QR) "Analysing QR code…" else "Running security checks…") {
             ScanUiState.Done(engine.scan(input, type, settings.toOptions()))

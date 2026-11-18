@@ -3,6 +3,7 @@ package com.kavach.scanner
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -141,6 +142,10 @@ class MainActivity : ComponentActivity() {
                     if (text.isNotBlank()) vm.scan(text.take(10_000), InputType.URL)
                 }
             }
+            Intent.ACTION_VIEW -> {
+                val url = intent.dataString
+                if (url != null && (url.startsWith("http://", true) || url.startsWith("https://", true))) vm.scanLink(url.take(4_000))
+            }
             Intent.ACTION_PROCESS_TEXT -> {
                 intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()?.takeIf { it.isNotBlank() }?.let { vm.scan(it.take(10_000), InputType.URL) }
             }
@@ -207,6 +212,18 @@ private fun BarItem(t: Tab, selected: Boolean, modifier: Modifier, onClick: () -
         Text(t.label, color = c, fontSize = 11.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium)
         Box(Modifier.padding(top = 3.dp).width(w).height(3.dp).clip(RoundedCornerShape(2.dp)).background(c))
     }
+}
+
+/** Opens a checked link in a real browser, never back in Kavach (Kavach may be chosen as the link handler). */
+private fun openInBrowser(ctx: Context, url: String) {
+    val view = Intent(Intent.ACTION_VIEW, Uri.parse(url)).addCategory(Intent.CATEGORY_BROWSABLE)
+    val pm = ctx.packageManager
+    val candidates = runCatching { pm.queryIntentActivities(Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com")).addCategory(Intent.CATEGORY_BROWSABLE), 0) }
+        .getOrDefault(emptyList()).map { it.activityInfo.packageName }.filter { it != ctx.packageName }.distinct()
+    val preferred = runCatching { pm.resolveActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com")), PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName }.getOrNull()
+    val target = preferred?.takeIf { it in candidates } ?: candidates.firstOrNull()
+    if (target != null) view.setPackage(target)
+    runCatching { ctx.startActivity(view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
 }
 
 /** Android 12+: tells whether the clipboard holds a link WITHOUT reading it (no privacy toast). */
@@ -326,11 +343,15 @@ fun KavachApp(vm: ScanViewModel) {
                     QrScannerScreen(onResult = { vm.scan(it, InputType.QR) }, onBack = { nav.popBackStack() })
                 }
                 composable("result") {
+                    val ctxR = LocalContext.current
+                    val linkToOpen by vm.linkToOpen.collectAsStateWithLifecycle()
                     ResultScreen(
                         state = state,
                         onBack = { vm.reset(); nav.popBackStack("home", inclusive = false) },
                         onScanAgain = { vm.reset(); nav.popBackStack("home", inclusive = false); go("scan") },
                         onReport = { nav.navigate("report") },
+                        openUrl = linkToOpen,
+                        onOpenUrl = { openInBrowser(ctxR, it) },
                     )
                 }
                 composable("device") { DeviceScreen(device, deviceRunning, onRun = { vm.runDeviceCheck() }, onBack = { nav.popBackStack() }) }

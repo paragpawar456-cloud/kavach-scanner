@@ -72,13 +72,13 @@ import com.kavach.scanner.ui.components.enter
 import com.kavach.scanner.ui.theme.K
 
 @Composable
-fun ResultScreen(state: ScanUiState, onBack: () -> Unit, onScanAgain: () -> Unit, onReport: () -> Unit) {
+fun ResultScreen(state: ScanUiState, onBack: () -> Unit, onScanAgain: () -> Unit, onReport: () -> Unit, openUrl: String? = null, onOpenUrl: (String) -> Unit = {}) {
     Column(Modifier.fillMaxSize().background(K.bg)) {
         KTopBar("Scan result", onBack)
         when (state) {
             is ScanUiState.Scanning, ScanUiState.Idle -> Scanning((state as? ScanUiState.Scanning)?.label ?: "Preparing…")
             is ScanUiState.Error -> ErrorView(state.message, onScanAgain)
-            is ScanUiState.Done -> Report(state, onScanAgain, onReport)
+            is ScanUiState.Done -> Report(state, onScanAgain, onReport, openUrl, onOpenUrl)
         }
     }
 }
@@ -117,7 +117,7 @@ private fun ErrorView(message: String, onScanAgain: () -> Unit) {
 }
 
 @Composable
-private fun Report(done: ScanUiState.Done, onScanAgain: () -> Unit, onReport: () -> Unit) {
+private fun Report(done: ScanUiState.Done, onScanAgain: () -> Unit, onReport: () -> Unit, openUrl: String?, onOpenUrl: (String) -> Unit) {
     val r = done.report
     val context = LocalContext.current
     val color = K.verdict(r.verdict)
@@ -214,6 +214,30 @@ private fun Report(done: ScanUiState.Done, onScanAgain: () -> Unit, onReport: ()
         }
 
         SectionTitle("Actions")
+        if (openUrl != null) {
+            // Link Guard: the user tapped this link in another app and sent it here first.
+            KCard(Modifier.fillMaxWidth(), accent = K.verdict(r.verdict)) {
+                Text(
+                    when (r.verdict) {
+                        Verdict.SAFE -> "No warning signs found. You can open this link."
+                        Verdict.SUSPICIOUS -> "Be careful. Only open it if you trust the sender, and never enter OTP, PIN or card details."
+                        Verdict.DANGEROUS -> "Do not open this link. It shows strong signs of a scam."
+                    },
+                    color = K.text, style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(Modifier.height(10.dp))
+                if (r.verdict == Verdict.SAFE) {
+                    ShineButton("OPEN IN BROWSER", Icons.Filled.Shield, Modifier.fillMaxWidth(), color = K.green) { onOpenUrl(openUrl) }
+                } else {
+                    var confirm by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                    OutlinedButton(
+                        onClick = { if (confirm) onOpenUrl(openUrl) else confirm = true },
+                        modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp),
+                    ) { Text(if (confirm) "Tap again to open at your own risk" else "Open anyway", color = K.red, fontWeight = FontWeight.SemiBold) }
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+        }
         if (r.verdict != Verdict.SAFE) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 ShineButton("CALL 1930", Icons.Filled.Phone, Modifier.weight(1f), color = K.red) {

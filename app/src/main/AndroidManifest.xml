@@ -56,6 +56,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>
+            <!-- Link Guard: pick Kavach when tapping a link in WhatsApp/SMS; it is checked before it opens in the browser. -->
+            <intent-filter android:label="@string/link_guard_label">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+            </intent-filter>
             <!-- Select text anywhere > "Check with Kavach" -->
             <intent-filter android:label="@string/process_text_label">
                 <action android:name="android.intent.action.PROCESS_TEXT" />

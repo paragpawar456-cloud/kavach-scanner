@@ -105,7 +105,58 @@ class MessageShieldService : NotificationListenerService() {
         runCatching { NotificationManagerCompat.from(this).notify(text.hashCode(), notif) }
     }
 
+    /** New App Guard: runs while the Shield service is connected (implicit broadcasts need a live receiver on Android 8+). */
+    private val installReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: Context, i: Intent) {
+            if (i.getBooleanExtra(Intent.EXTRA_REPLACING, false)) return
+            val pkg = i.data?.schemeSpecificPart ?: return
+            if (!SettingsStore(c).messageShield) return
+            scope.launch {
+                val v = AppGuard.inspect(this@MessageShieldService, pkg) ?: return@launch
+                warnApp(v)
+            }
+        }
+    }
+    private var receiverOn = false
+
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        if (!receiverOn) {
+            val f = android.content.IntentFilter(Intent.ACTION_PACKAGE_ADDED).apply { addDataScheme("package") }
+            runCatching { ContextCompat.registerReceiver(this, installReceiver, f, ContextCompat.RECEIVER_EXPORTED) }.onSuccess { receiverOn = true }
+        }
+    }
+
+    override fun onListenerDisconnected() {
+        if (receiverOn) runCatching { unregisterReceiver(installReceiver) }
+        receiverOn = false
+        super.onListenerDisconnected()
+    }
+
+    private fun warnApp(v: AppGuard.Verdict) {
+        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+        ensureChannel(this)
+        val details = com.kavach.scanner.scan.DeviceChecker.appDetails(v.pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val pi = PendingIntent.getActivity(this, v.pkg.hashCode(), details, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val title = if (v.danger) "⚠ Dangerous app installed: ${v.name}" else "Check new app: ${v.name}"
+        val body = v.reasons.joinToString("\n") { "• $it" } +
+            if (v.danger) "\n\nIf you installed this because someone asked you to, uninstall it now and call your bank. Tap to uninstall." else "\n\nTap to review its permissions."
+        val notif = NotificationCompat.Builder(this, CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat_shield)
+            .setContentTitle(title)
+            .setContentText(v.reasons.firstOrNull().orEmpty())
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setColor(0xFFFF5722.toInt())
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pi)
+            .setAutoCancel(true)
+            .build()
+        runCatching { NotificationManagerCompat.from(this).notify(v.pkg.hashCode(), notif) }
+    }
+
     override fun onDestroy() {
+        if (receiverOn) runCatching { unregisterReceiver(installReceiver) }
+        receiverOn = false
         scope.cancel()
         super.onDestroy()
     }
