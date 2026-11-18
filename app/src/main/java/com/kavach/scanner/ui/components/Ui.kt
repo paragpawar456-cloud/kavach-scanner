@@ -74,7 +74,7 @@ fun Modifier.pressable(enabled: Boolean = true, onClick: () -> Unit): Modifier {
 /** Fades and slides content in, delayed by [index] for a staggered entrance. */
 @Composable
 fun Modifier.enter(index: Int = 0): Modifier {
-    val a = remember { Animatable(0f) }
+    val a = remember { Animatable(if (still) 1f else 0f) }
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(60L * index)
         a.animateTo(1f, tween(420, easing = FastOutSlowInEasing))
@@ -168,7 +168,7 @@ fun KTopBar(title: String, onBack: (() -> Unit)?, actions: @Composable () -> Uni
 /** Animated circular score meter. [goodHigh] = true when a high number is good (device score). */
 @Composable
 fun ScoreRing(score: Int, color: Color, label: String, modifier: Modifier = Modifier, size: Dp = 150.dp, trackColor: Color = K.outline, textColor: Color = color, labelColor: Color = K.textDim) {
-    val anim = remember { Animatable(0f) }
+    val anim = remember { Animatable(if (still) score.toFloat() else 0f) }
     LaunchedEffect(score) { anim.animateTo(score.toFloat(), tween(1200, easing = FastOutSlowInEasing)) }
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(size)) {
@@ -203,3 +203,7 @@ fun KRow(icon: ImageVector, color: Color, title: String, subtitle: String?, modi
 fun Dot(color: Color, size: Dp = 8.dp) {
     Box(Modifier.size(size).clip(CircleShape).background(color).border(0.dp, Color.Transparent, CircleShape))
 }
+
+/** True in design previews and screenshot tests, where animations start at their end state. */
+internal val still: Boolean
+    @Composable get() = androidx.compose.ui.platform.LocalInspectionMode.current

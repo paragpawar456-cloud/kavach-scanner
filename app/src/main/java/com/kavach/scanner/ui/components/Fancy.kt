@@ -88,7 +88,7 @@ fun SegmentedGauge(
     score: Int, modifier: Modifier = Modifier, size: Dp = 170.dp, activeColor: Color = Color.White,
     trackColor: Color = Color.White.copy(alpha = 0.25f), label: String = "SECURITY", textColor: Color = Color.White,
 ) {
-    val anim = remember { Animatable(0f) }
+    val anim = remember { Animatable(if (still) score.toFloat() else 0f) }
     LaunchedEffect(score) { anim.animateTo(score.toFloat(), tween(1400, easing = FastOutSlowInEasing)) }
     val t = rememberInfiniteTransition(label = "g")
     val spin by t.animateFloat(0f, 360f, infiniteRepeatable(tween(12000, easing = LinearEasing)), label = "spin")
@@ -158,7 +158,7 @@ fun StatusPill(text: String, color: Color, modifier: Modifier = Modifier, filled
 /** Thin animated progress bar. */
 @Composable
 fun KProgress(fraction: Float, color: Color, modifier: Modifier = Modifier) {
-    val anim = remember { Animatable(0f) }
+    val anim = remember { Animatable(if (still) fraction.coerceIn(0f, 1f) else 0f) }
     LaunchedEffect(fraction) { anim.animateTo(fraction.coerceIn(0f, 1f), tween(900, easing = FastOutSlowInEasing)) }
     Box(modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(K.outline)) {
         Box(Modifier.fillMaxWidth(anim.value).fillMaxHeight().clip(RoundedCornerShape(3.dp)).background(Brush.horizontalGradient(listOf(color.copy(alpha = 0.7f), color))))
