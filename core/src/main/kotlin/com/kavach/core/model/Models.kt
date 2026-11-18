@@ -18,7 +18,7 @@ enum class Category(val label: String) {
 }
 
 /** What the user asked us to scan. */
-enum class InputType { URL, MESSAGE, QR, SCREENSHOT }
+enum class InputType { URL, MESSAGE, QR, SCREENSHOT, PHONE }
 
 /**
  * One reason behind the verdict.

@@ -45,3 +45,29 @@ jobs:
             Built from commit ${{ github.sha }}.
           files: Kavach.apk
           make_latest: true
+
+  screenshots:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Render screens (Paparazzi)
+        run: ./gradlew :app:recordPaparazziDebug --no-daemon
+      - name: Publish screenshots to the 'screenshots' branch
+        run: |
+          mkdir -p /tmp/shots && cp app/src/test/snapshots/images/*.png /tmp/shots/
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan screenshots
+          git rm -rf . > /dev/null
+          rm -rf ./* .github .gitignore 2>/dev/null || true
+          cp /tmp/shots/*.png .
+          git add *.png
+          git commit -m "Screenshots for ${GITHUB_SHA}"
+          git push -f origin screenshots

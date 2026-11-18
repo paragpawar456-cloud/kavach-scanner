@@ -36,6 +36,7 @@ class ScanEngine(private val online: OnlineChecker = HttpOnlineChecker()) {
         val text = input.trim()
         when (type) {
             InputType.QR -> scanQr(text, options)
+            InputType.PHONE -> CallerCheck.analyze(text)
             InputType.MESSAGE, InputType.SCREENSHOT -> scanMessage(text, type, options)
             InputType.URL -> {
                 // People paste whole messages into the link box too; route them sensibly.
