@@ -61,6 +61,22 @@ class ScanViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    private val _privacy = MutableStateFlow<PrivacyReport?>(null)
+    val privacy: StateFlow<PrivacyReport?> = _privacy
+    private val _privacyRunning = MutableStateFlow(false)
+    val privacyRunning: StateFlow<Boolean> = _privacyRunning
+    fun runPrivacyAudit() {
+        if (_privacyRunning.value) return
+        _privacyRunning.value = true
+        viewModelScope.launch {
+            val started = System.currentTimeMillis()
+            val r = withContext(Dispatchers.Default) { runCatching { PrivacyAuditor.run(getApplication()) }.getOrNull() }
+            kotlinx.coroutines.delay((1200 - (System.currentTimeMillis() - started)).coerceAtLeast(0))
+            _privacy.value = r
+            _privacyRunning.value = false
+        }
+    }
+
     /** Breach check result: null = not run, -1 = error, else count. */
     private val _breach = MutableStateFlow<Int?>(null)
     val breach: StateFlow<Int?> = _breach
