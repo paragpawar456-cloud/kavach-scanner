@@ -134,7 +134,7 @@ private fun GroupCard(g: PermGroup, apps: List<Pair<String, String>>, modifier: 
                 Text(g.why, color = K.textDim, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             Spacer(Modifier.width(8.dp))
-            StatusPill(if (apps.isEmpty()) "NONE" else "${apps.size} APPS", color)
+            StatusPill(if (apps.isEmpty()) "NONE" else if (apps.size == 1) "1 APP" else "${apps.size} APPS", color)
             if (apps.isNotEmpty()) Icon(if (open) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, null, tint = K.textDim)
         }
         AnimatedVisibility(open) {
