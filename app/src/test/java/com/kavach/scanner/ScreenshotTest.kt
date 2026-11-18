@@ -39,7 +39,7 @@ class ScreenshotTest {
     val paparazzi = Paparazzi(deviceConfig = DeviceConfig.PIXEL_5, theme = "android:Theme.Material.Light.NoActionBar", maxPercentDifference = 1.0)
 
     private fun shot(dark: Boolean = false, content: @Composable () -> Unit) =
-        paparazzi.snapshot { KavachTheme(if (dark) ThemeMode.DARK else ThemeMode.LIGHT) { content() } }
+        paparazzi.snapshot { Still { KavachTheme(if (dark) ThemeMode.DARK else ThemeMode.LIGHT) { content() } } }
 
     private val dangerous by lazy {
         val url = "http://sbi-kyc-update.xyz/login"
@@ -64,7 +64,7 @@ class TallScreenshotTest {
     @get:Rule
     val paparazzi = Paparazzi(deviceConfig = DeviceConfig.PIXEL_5.copy(screenHeight = 5600), theme = "android:Theme.Material.Light.NoActionBar", maxPercentDifference = 1.0)
 
-    @Test fun homeFull() = paparazzi.snapshot { KavachTheme(ThemeMode.LIGHT) { HomeUnderTest(copied = true) } }
+    @Test fun homeFull() = paparazzi.snapshot { Still { KavachTheme(ThemeMode.LIGHT) { HomeUnderTest(copied = true) } } }
 }
 
 @Composable
@@ -80,3 +80,8 @@ internal fun WithBar(route: String, content: @Composable () -> Unit) {
 internal val fakePrivacy = PrivacyReport(PrivacyAuditor.groups.mapIndexed { i, g ->
     g to listOf("WhatsApp", "Instant Loan Pro", "Truecaller", "Instagram", "PhonePe").take(i % 4).map { AppPerm(it, "pkg.$it", false) }
 })
+
+/** Makes entrance animations render at their end state. */
+@Composable
+internal fun Still(content: @Composable () -> Unit) =
+    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalInspectionMode provides true, content = content)
